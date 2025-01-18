@@ -1,0 +1,9 @@
+com\gcs\ui\AsignaturaController.class
+com\gcs\ui\Controller.class
+com\gcs\App.class
+com\gcs\models\Tarea.class
+com\gcs\models\Asignatura.class
+com\gcs\ui\MainView.class
+com\gcs\utils\Prioridad.class
+com\gcs\services\TareaService.class
+com\gcs\services\AsignaturaService.class
