@@ -1,78 +1,71 @@
 package com.gcs;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.gcs.models.Tarea;
 import com.gcs.services.TareaService;
 import com.gcs.utils.Prioridad;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Scanner;
 
-public class TareaServiceTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    
-    private Scanner scanner = new Scanner(System.in);
+class TareaServiceTest {
 
-    private TareaService tareaService = new TareaService();
+    private TareaService tareaService;
 
+    @BeforeEach
+    void setUp() {
+        tareaService = new TareaService();
+    }
 
     @Test
-    public void testAgregarTarea() {
-        // Mocking the user input for adding a task
-        when(scanner.nextLine()).thenReturn("Tarea 1", "Descripción de tarea 1", "2025-12-31");
-        when(scanner.nextInt()).thenReturn(1);
-
-        tareaService.agregarTarea();
+    void agregarTareaDirecta_shouldAddTaskSuccessfully() {
+        tareaService.agregarTareaDirecta("Tarea 1", "Descripción 1", Prioridad.ALTA, "2025-01-30");
 
         List<Tarea> tareas = tareaService.getTareas();
-        assertEquals(1, tareas.size(), "Debe haber una tarea agregada.");
+        assertEquals(1, tareas.size());
         assertEquals("Tarea 1", tareas.get(0).getTitulo());
-        assertEquals("Descripción de tarea 1", tareas.get(0).getDescripcion());
         assertEquals(Prioridad.ALTA, tareas.get(0).getPrioridad());
-        assertEquals("2025-12-31", tareas.get(0).getFechaVencimiento());
     }
 
     @Test
-    public void testVerTareas() {
-        // Adding a task directly
-        tareaService.agregarTareaDirecta("Tarea 1", "Descripción tarea 1", Prioridad.ALTA, "2025-12-31");
-
-        // Verify if tareas are displayed correctly
-        tareaService.verTareas();
-        List<Tarea> tareas = tareaService.getTareas();
-        assertFalse(tareas.isEmpty(), "Debe haber tareas para mostrar.");
-    }
-
-    @Test
-    public void testEditarTarea() {
-        tareaService.agregarTareaDirecta("Tarea 1", "Descripción tarea 1", Prioridad.ALTA, "2025-12-31");
-
-        tareaService.editarTareaDirecta(1, "Tarea Editada", "Descripción tarea editada", Prioridad.BAJA, "2025-11-30");
-        
+    void editarTareaDirecta_shouldEditExistingTask() {
+        tareaService.agregarTareaDirecta("Tarea 1", "Descripción 1", Prioridad.MEDIA, "2025-01-30");
         Tarea tarea = tareaService.getTareas().get(0);
-        assertEquals("Tarea Editada", tarea.getTitulo());
-        assertEquals("Descripción tarea editada", tarea.getDescripcion());
-        assertEquals(Prioridad.BAJA, tarea.getPrioridad());
-        assertEquals("2025-11-30", tarea.getFechaVencimiento());
+
+        tareaService.editarTareaDirecta(tarea.getId(), "Nuevo Titulo", "Nueva Descripción", Prioridad.ALTA, "2025-02-01");
+
+        Tarea tareaEditada = tareaService.getTareas().get(0);
+        assertEquals("Nuevo Titulo", tareaEditada.getTitulo());
+        assertEquals("Nueva Descripción", tareaEditada.getDescripcion());
+        assertEquals(Prioridad.ALTA, tareaEditada.getPrioridad());
+        assertEquals("2025-02-01", tareaEditada.getFechaVencimiento());
     }
 
     @Test
-    public void testEliminarTarea() {
-        tareaService.agregarTareaDirecta("Tarea 1", "Descripción tarea 1", Prioridad.ALTA, "2025-12-31");
+    void eliminarTareaDirecta_shouldRemoveExistingTask() {
+        tareaService.agregarTareaDirecta("Tarea 1", "Descripción 1", Prioridad.BAJA, "2025-01-30");
+        Tarea tarea = tareaService.getTareas().get(0);
 
-        tareaService.eliminarTareaDirecta(1);
+        tareaService.eliminarTareaDirecta(tarea.getId());
 
-        List<Tarea> tareas = tareaService.getTareas();
-        assertTrue(tareas.isEmpty(), "La lista de tareas debe estar vacía después de eliminar la tarea.");
+        assertTrue(tareaService.getTareas().isEmpty());
     }
 
     @Test
-    public void testEliminarTareaNoExistente() {
-        tareaService.eliminarTareaDirecta(999); // ID no existente
+    void eliminarTareaDirecta_shouldNotFailForNonExistentTask() {
+        tareaService.eliminarTareaDirecta(999);
+
+        assertTrue(tareaService.getTareas().isEmpty());
+    }
+
+    @Test
+    void getTareas_shouldReturnAllTasks() {
+        tareaService.agregarTareaDirecta("Tarea 1", "Descripción 1", Prioridad.ALTA, "2025-01-30");
+        tareaService.agregarTareaDirecta("Tarea 2", "Descripción 2", Prioridad.MEDIA, "2025-02-01");
+
         List<Tarea> tareas = tareaService.getTareas();
-        assertTrue(tareas.isEmpty(), "No debe eliminar tareas si no existe.");
+        assertEquals(2, tareas.size());
     }
 }
